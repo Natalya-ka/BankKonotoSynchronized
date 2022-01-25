@@ -3,14 +3,32 @@ class Konto {
     //ausz выплата,einz начисление
     //счет
     //доступ
-    public  int auszahlung(){
+    private boolean zugriff=false;
+
+    public synchronized int auszahlung(){
+        while (!zugriff){
+            try{
+                wait();
+            }catch (InterruptedException e){ }
+        }
         ausz=einz;
-       stand-=ausz;
-       return ausz;
+        stand-=ausz;
+        zugriff=false;
+        notifyAll();
+        return ausz;
     }
-    public void einzahlung(int wert) {
+    public synchronized void einzahlung(int wert) {
+        while (zugriff) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         einz = wert;
         stand += wert;
+        zugriff = true;
+        notifyAll();
     }
     public int stand(){
         return stand;
